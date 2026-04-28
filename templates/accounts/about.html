@@ -4,26 +4,198 @@
 {% block title %}Duo | O nas{% endblock %}
 
 {% block content %}
-<section class="section-card about-brief">
-    <div class="about-brief-grid">
-        <figure class="about-brief-photo">
-            <img
-                src="{% static 'images/home/editorial.png' %}"
-                alt="Salon fryzjerski Duo"
-                loading="lazy"
-                decoding="async"
-            >
-        </figure>
-        <div class="about-brief-text">
-            <h1>O nas</h1>
-            <p>
-                <strong>Duo</strong> to salon fryzjerski, który łączy <strong>rzemiosło i tradycję</strong> z <strong>nowoczesnymi technikami</strong> i aktualnymi trendami.
-                W pracy stawiamy na <strong>jakość usług</strong>, sprawdzone preparaty oraz <strong>indywidualne podejście do każdego klienta</strong> — od konsultacji po efekt końcowy.
-            </p>
-            <p>
-                Zależy nam na <strong>komforcie i zaufaniu</strong>: słuchamy potrzeb, doradzamy wybór stylu i fryzury dopasowanej do Ciebie, dbając o spokojną atmosferę podczas wizyty.
-            </p>
+<style>
+/* Kontener główny */
+.about-page-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* Animowany nagłówek */
+.about-hero {
+    position: relative;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.hero-reveal-container {
+    position: relative;
+    text-align: center;
+}
+
+.ghost-text-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: clamp(4rem, 12vw, 9rem);
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: rgba(0, 0, 0, 0.03);
+    z-index: 1;
+    pointer-events: none;
+    text-transform: uppercase;
+    animation: revealFromBottom 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.main-hero-title {
+    position: relative;
+    z-index: 2;
+    font-size: 2.5rem;
+    color: #1a1a1a;
+    margin: 0;
+    font-weight: 400;
+    animation: revealMain 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+/* Karta */
+.about-card {
+    background: #ffffff;
+    padding: 60px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+/* Górna sekcja (Centrowanie) */
+.about-main-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.about-main-photo img {
+    max-width: 460px;
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.about-intro-text {
+    max-width: 700px;
+    margin: 0 auto;
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.story-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.85rem;
+    color: #a18a68;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Sekcja Matka i Córka */
+.about-team-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    margin-top: 80px;
+    padding-top: 60px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.team-member { text-align: left; }
+
+.team-photo {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    filter: grayscale(20%);
+    transition: filter 0.3s ease;
+}
+
+.team-member:hover .team-photo { filter: grayscale(0%); }
+
+.team-member h3 { font-size: 1.5rem; margin-bottom: 10px; color: #1a1a1a; }
+
+.team-role {
+    display: block;
+    color: #a18a68;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.team-desc { font-size: 0.95rem; line-height: 1.6; color: #555; }
+
+/* Animacje */
+@keyframes revealFromBottom {
+    0% { opacity: 0; transform: translate(-50%, 20%); }
+    100% { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+@keyframes revealMain {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsywność */
+@media (max-width: 900px) {
+    .about-card { padding: 30px; }
+    .about-hero { height: 150px; }
+}
+
+@media (max-width: 768px) {
+    .about-team-grid { grid-template-columns: 1fr; gap: 40px; }
+}
+</style>
+
+<div class="about-page-wrapper">
+    <header class="about-hero">
+        <div class="hero-reveal-container">
+            <span class="ghost-text-bg">HISTORIA</span>
+            <h1 class="main-hero-title">Poznaj Duo</h1>
         </div>
-    </div>
-</section>
+    </header>
+
+    <main class="about-card">
+        <section class="about-main-header">
+            <figure class="about-main-photo">
+                <img src="{% static 'images/home/editorial.png' %}" alt="Matka i córka - założycielki Duo">
+            </figure>
+            <div class="about-intro-text">
+                <p class="story-eyebrow">Rodzinna tradycja</p>
+                <p>
+                    <strong>Duo</strong> to salon fryzjerski, który łączy <strong>rzemiosło i tradycję</strong> z <strong>nowoczesnymi technikami</strong> i aktualnymi trendami.
+                    W pracy stawiamy na <strong>jakość usług</strong>, sprawdzone preparaty oraz <strong>indywidualne podejście do każdego klienta</strong><br>— od konsultacji po efekt końcowy.
+                </p>
+                <p>
+                    Zależy nam na <strong>komforcie i zaufaniu</strong>: słuchamy potrzeb, doradzamy wybór stylu i fryzury dopasowanej do Ciebie, dbając o spokojną atmosferę podczas wizyty.
+                </p>
+            </div>
+        </section>
+
+        <section class="about-team-grid">
+            <article class="team-member">
+                <img src="{% static 'images/home/mama.png' %}" alt="Założycielka - Mama" class="team-photo">
+                <span class="team-role">Rzemiosło i Doświadczenie</span>
+                <h3>Mama</h3>
+                <p class="team-desc">
+                    Wieloletnia praktyka nauczyła mnie, że podstawą dobrej fryzury jest zrozumienie struktury włosa i spokój. 
+                    W Duo dbam o to, by klasyczne techniki strzyżenia i tradycyjne podejście do klienta stanowiły solidny fundament naszej pracy.
+                </p>
+            </article>
+
+            <article class="team-member">
+                <img src="{% static 'images/home/corka.png' %}" alt="Założycielka - Córka" class="team-photo">
+                <span class="team-role">Innowacja i Trendy</span>
+                <h3>Córka</h3>
+                <p class="team-desc">
+                    Świeże spojrzenie na koloryzację i fascynacja nowoczesnymi trendami to mój wkład w historię salonu. 
+                    Nieustannie szukam nowych inspiracji, by każda metamorfoza była unikalna i dopasowana do dynamicznego trybu życia naszych klientek.
+                </p>
+            </article>
+        </section>
+    </main>
+</div>
 {% endblock %}
