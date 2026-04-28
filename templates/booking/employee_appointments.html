@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Panel pracownika{% endblock %}
+
+{% block content %}
+<section class="section-card">
+    <div class="employee-header-row">
+        <h1>Panel pracownika - terminarz tygodniowy</h1>
+        <a class="btn btn-primary employee-add-btn" href="{% url 'employee_create_appointment' %}">Dodaj wizytę w imieniu klienta</a>
+    </div>
+
+    <form method="get" class="filter-grid">
+        <p>
+            <label for="employee">Fryzjer:</label>
+            <select id="employee" name="employee">
+                {% for employee in employees %}
+                    <option value="{{ employee.id }}" {% if selected_employee == employee.id|stringformat:"s" %}selected{% endif %}>
+                        {{ employee.get_full_name|default:employee.username }}
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
+        <p>
+            <label for="status">Status:</label>
+            <select id="status" name="status">
+                <option value="">Wszystkie</option>
+                {% for status_value, status_label in status_choices %}
+                    <option value="{{ status_value }}" {% if selected_status == status_value %}selected{% endif %}>
+                        {{ status_label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
+        <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
+        <p><button type="submit">Filtruj</button></p>
+    </form>
+
+    <div class="week-nav employee-week-nav">
+        <a class="btn btn-secondary" href="{% url 'employee_appointments' %}?employee={{ selected_employee }}&status={{ selected_status }}&week={{ prev_week }}">‹ Poprzedni tydzień</a>
+        <span class="week-range-label">Tydzień {{ week_start|date:"j.m" }} - {{ week_end|date:"j.m Y" }}</span>
+        <a class="btn btn-secondary" href="{% url 'employee_appointments' %}?employee={{ selected_employee }}&status={{ selected_status }}&week={{ next_week }}">Następny tydzień ›</a>
+    </div>
+
+    <div class="employee-calendar">
+        <div class="employee-calendar-head">
+            <div class="employee-calendar-time-head">Godzina</div>
+            {% for day in week_days %}
+                <div class="employee-calendar-day-head{% if day.weekday == 6 %} is-sunday{% endif %}">
+                    <span>{{ day|date:"D" }}</span>
+                    <strong>{{ day|date:"d.m" }}</strong>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="employee-calendar-body" style="height: {{ calendar_height }}px;">
+            <div class="employee-calendar-time-col">
+                {% for hour_label in hour_labels %}
+                    <div class="employee-calendar-hour">{{ hour_label }}</div>
+                {% endfor %}
+            </div>
+
+            {% for day in week_days %}
+                <div class="employee-calendar-day-col{% if day.weekday == 6 %} is-sunday{% endif %}"></div>
+            {% endfor %}
+
+            {% for block in appointment_blocks %}
+                <article
+                    class="appointment-block"
+                    data-appointment-block
+                    style="left: calc(({{ block.day_index }} * (100% - 76px) / 7) + 76px); width: calc((100% - 76px) / 7 - 8px); top: {{ block.top }}px; height: {{ block.height }}px;"
+                >
+                    <p class="appointment-block-title">{{ block.appointment.service.name }}</p>
+                    <p class="appointment-block-time">{{ block.start_label }} - {{ block.end_label }}</p>
+                    <div class="appointment-tooltip">
+                        <p><strong>Usługa:</strong> {{ block.appointment.service.name }}</p>
+                        <p><strong>Klient:</strong> {{ block.appointment.get_client_display_name }}</p>
+                        <p><strong>Telefon:</strong> {{ block.appointment.get_client_display_phone|default:"brak" }}</p>
+                        <p><strong>Termin:</strong> {{ block.appointment.date|date:"d.m.Y" }} {{ block.start_label }} - {{ block.end_label }}</p>
+                        <p><strong>Status:</strong> {{ block.appointment.get_status_display }}</p>
+                        <p><a href="{% url 'employee_edit_appointment' block.appointment.id %}">Edytuj wizytę</a></p>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if not appointments %}
+        <p>Brak wizyt w wybranym tygodniu.</p>
+    {% endif %}
+</section>
+
+<script>
+    (function () {
+        var blocks = document.querySelectorAll('[data-appointment-block]');
+        if (!blocks.length) {
+            return;
+        }
+
+        function closeAllBlocks() {
+            blocks.forEach(function (block) {
+                block.classList.remove('is-open');
+                block.classList.remove('tooltip-left');
+            });
+        }
+
+        blocks.forEach(function (block) {
+            block.addEventListener('click', function (event) {
+                event.stopPropagation();
+                var shouldOpen = !block.classList.contains('is-open');
+                closeAllBlocks();
+                if (shouldOpen) {
+                    var blockRect = block.getBoundingClientRect();
+                    var tooltipWidth = 320;
+                    if (blockRect.right + tooltipWidth > window.innerWidth - 8) {
+                        block.classList.add('tooltip-left');
+                    }
+                    block.classList.add('is-open');
+                }
+            });
+        });
+
+        document.addEventListener('click', closeAllBlocks);
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeAllBlocks();
+            }
+        });
+    })();
+</script>
+{% endblock %}

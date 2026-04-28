@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Umów wizytę{% endblock %}
+
+{% block content %}
+<section class="section-card">
+    <h1>Wybierz usługę i pracownika</h1>
+    <form method="post" id="booking-form" class="booking-layout">
+        {% csrf_token %}
+
+        <div class="booking-main">
+            <div class="booking-selects">
+                <p>
+                    <label for="service">Usługa:</label>
+                    <select name="service" id="service" required>
+                        <option value="">Wybierz usługę</option>
+                        {% for service in services %}
+                            <option value="{{ service.id }}" {% if selected_service_id == service.id|stringformat:"s" %}selected{% endif %}>
+                                {{ service.name }} ({{ service.duration_minutes }} min)
+                            </option>
+                        {% endfor %}
+                    </select>
+                </p>
+                <p>
+                    <label for="employee">Pracownik:</label>
+                    <select name="employee" id="employee" required>
+                        <option value="">Wybierz pracownika</option>
+                        {% for employee in employees %}
+                            <option value="{{ employee.id }}" {% if selected_employee_id == employee.id|stringformat:"s" %}selected{% endif %}>
+                                {{ employee.first_name }} {{ employee.last_name|default:employee.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </p>
+            </div>
+
+            <div class="booking-calendar-wrap">
+                <div class="calendar-header">
+                    <button type="button" id="month-prev" class="btn btn-secondary">‹</button>
+                    <h2 id="month-label"></h2>
+                    <button type="button" id="month-next" class="btn btn-secondary">›</button>
+                </div>
+                <div class="calendar-weekdays">
+                    <span>Pn</span><span>Wt</span><span>Śr</span><span>Czw</span><span>Pt</span><span>Sob</span><span>Nd</span>
+                </div>
+                <div id="calendar-grid" class="calendar-grid"></div>
+            </div>
+        </div>
+
+        <aside class="booking-side">
+            <p>
+                <label for="time">Godzina:</label>
+                <select name="time" id="time" required>
+                    <option value="">Wybierz godzinę</option>
+                </select>
+            </p>
+
+            <div class="section-card booking-summary">
+                <h2>Podsumowanie</h2>
+                <p><strong>Usługa:</strong> <span id="summary-service">-</span></p>
+                <p><strong>Pracownik:</strong> <span id="summary-employee">-</span></p>
+                <p><strong>Dzień:</strong> <span id="summary-date">-</span></p>
+                <p><strong>Godzina:</strong> <span id="summary-time">-</span></p>
+                <input type="hidden" name="date" id="selected-date" value="{{ selected_date }}">
+                <button type="submit">Zarejestruj</button>
+            </div>
+        </aside>
+    </form>
+</section>
+
+<script>
+    (function () {
+        const monthNames = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
+        const today = new Date();
+        let currentYear = today.getFullYear();
+        let currentMonth = today.getMonth() + 1;
+        let selectedDay = null;
+        let disabledDays = new Set();
+        const todayIsClosed = '{{ today_is_closed|yesno:"true,false" }}' === 'true';
+
+        const service = document.getElementById('service');
+        const employee = document.getElementById('employee');
+        const time = document.getElementById('time');
+        const selectedDate = document.getElementById('selected-date');
+        const initialDate = '{{ selected_date }}';
+        const initialTime = '{{ selected_time }}';
+
+        const summaryService = document.getElementById('summary-service');
+        const summaryEmployee = document.getElementById('summary-employee');
+        const summaryDate = document.getElementById('summary-date');
+        const summaryTime = document.getElementById('summary-time');
+
+        const monthLabel = document.getElementById('month-label');
+        const calendarGrid = document.getElementById('calendar-grid');
+        const monthPrev = document.getElementById('month-prev');
+        const monthNext = document.getElementById('month-next');
+
+        function formatDate(day) {
+            const dd = String(day).padStart(2, '0');
+            const mm = String(currentMonth).padStart(2, '0');
+            return `${dd}/${mm}/${currentYear}`;
+        }
+
+        function renderSummary() {
+            summaryService.textContent = service.options[service.selectedIndex]?.text || '-';
+            summaryEmployee.textContent = employee.options[employee.selectedIndex]?.text || '-';
+            summaryDate.textContent = selectedDate.value || '-';
+            summaryTime.textContent = time.value || '-';
+        }
+
+        async function loadCalendarData() {
+            const params = new URLSearchParams({
+                year: String(currentYear),
+                month: String(currentMonth),
+                day: selectedDay ? String(selectedDay) : '',
+            });
+            if (employee.value) {
+                params.append('employee', employee.value);
+            }
+            if (service.value) {
+                params.append('service', service.value);
+            }
+
+            const response = await fetch('{% url "appointment_calendar" %}?' + params.toString());
+            if (!response.ok) {
+                return;
+            }
+            const data = await response.json();
+            disabledDays = new Set(data.disabled_days || []);
+            renderCalendar();
+            updateTimeOptions(data.available_slots || []);
+        }
+
+        function updateTimeOptions(slots) {
+            const current = time.value;
+            time.innerHTML = '<option value="">Wybierz godzinę</option>';
+            slots.forEach((slot) => {
+                const option = document.createElement('option');
+                option.value = slot;
+                option.textContent = slot;
+                time.appendChild(option);
+            });
+            if (slots.includes(current)) {
+                time.value = current;
+            } else {
+                time.value = '';
+            }
+            renderSummary();
+        }
+
+        function renderCalendar() {
+            monthLabel.textContent = `${monthNames[currentMonth - 1]} ${currentYear}`;
+            calendarGrid.innerHTML = '';
+
+            const firstDay = new Date(currentYear, currentMonth - 1, 1);
+            const offset = (firstDay.getDay() + 6) % 7;
+            const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+
+            for (let i = 0; i < offset; i += 1) {
+                const empty = document.createElement('span');
+                empty.className = 'calendar-empty';
+                calendarGrid.appendChild(empty);
+            }
+
+            for (let day = 1; day <= daysInMonth; day += 1) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'calendar-day';
+                button.textContent = String(day);
+
+                const currentDate = new Date(currentYear, currentMonth - 1, day);
+                const isPast = currentDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const isSunday = currentDate.getDay() === 0;
+                const isClosedToday = todayIsClosed
+                    && currentDate.getFullYear() === today.getFullYear()
+                    && currentDate.getMonth() === today.getMonth()
+                    && currentDate.getDate() === today.getDate();
+                const isDisabled = isPast || isSunday || isClosedToday || disabledDays.has(day);
+
+                if (isDisabled) {
+                    button.classList.add('is-crossed');
+                    button.disabled = true;
+                }
+                if (selectedDay === day && !isDisabled) {
+                    button.classList.add('is-selected');
+                }
+
+                button.addEventListener('click', () => {
+                    selectedDay = day;
+                    selectedDate.value = formatDate(day);
+                    renderSummary();
+                    loadCalendarData();
+                });
+                calendarGrid.appendChild(button);
+            }
+        }
+
+        monthPrev.addEventListener('click', () => {
+            currentMonth -= 1;
+            if (currentMonth < 1) {
+                currentMonth = 12;
+                currentYear -= 1;
+            }
+            selectedDay = null;
+            selectedDate.value = '';
+            updateTimeOptions([]);
+            loadCalendarData();
+            renderSummary();
+        });
+
+        monthNext.addEventListener('click', () => {
+            currentMonth += 1;
+            if (currentMonth > 12) {
+                currentMonth = 1;
+                currentYear += 1;
+            }
+            selectedDay = null;
+            selectedDate.value = '';
+            updateTimeOptions([]);
+            loadCalendarData();
+            renderSummary();
+        });
+
+        service.addEventListener('change', renderSummary);
+        employee.addEventListener('change', () => {
+            selectedDay = null;
+            selectedDate.value = '';
+            updateTimeOptions([]);
+            loadCalendarData();
+            renderSummary();
+        });
+        time.addEventListener('change', renderSummary);
+
+        renderSummary();
+        renderCalendar();
+        if (initialDate && /^\d{2}\/\d{2}\/\d{4}$/.test(initialDate)) {
+            const [dayPart, monthPart, yearPart] = initialDate.split('/').map(Number);
+            selectedDay = dayPart;
+            currentMonth = monthPart;
+            currentYear = yearPart;
+            selectedDate.value = initialDate;
+        }
+        if (!employee.value && employee.options.length > 1) {
+            employee.selectedIndex = 1;
+        }
+        loadCalendarData().then(() => {
+            if (initialTime) {
+                time.value = initialTime;
+            }
+            renderSummary();
+        });
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+<footer class="site-footer">
+    <div class="container site-footer-inner">
+        <div class="site-footer-brand">
+            <a class="site-footer-logo" href="{% url 'home' %}">
+                {% include 'includes/brand_wordmark_inner.html' %}
+            </a>
+            <p class="site-footer-tagline">Salon fryzjerski prowadzony przez matkę i córkę — tradycja i nowoczesność w jednym miejscu.</p>
+        </div>
+        <nav class="site-footer-col" aria-label="Skróty nawigacji">
+            <h2 class="site-footer-heading">Na stronie</h2>
+            <ul class="site-footer-links">
+                <li><a href="{% url 'about' %}">O nas</a></li>
+                <li><a href="{% url 'service_list' %}">Usługi</a></li>
+                <li><a href="{% url 'portfolio' %}">Portfolio</a></li>
+                <li><a href="{% url 'contact' %}">Kontakt</a></li>
+                {% if request.user.is_authenticated and request.user.role == 'employee' %}
+                    <li><a href="{% url 'employee_appointments' %}">Terminarz</a></li>
+                {% else %}
+                    <li><a href="{% url 'public_schedule' %}">Terminarz</a></li>
+                    <li><a href="{% url 'create_appointment' %}">Umów wizytę</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        <div class="site-footer-col">
+            <h2 class="site-footer-heading">Kontakt</h2>
+            <address class="site-footer-contact">
+                <p><span class="site-footer-label">Adres</span><br>Aleja Piastów 62, Szczecin</p>
+                <p><span class="site-footer-label">Telefon</span><br><a href="tel:+48600700800">+48 600 700 800</a></p>
+                <p><span class="site-footer-label">E-mail</span><br><a href="mailto:kontakt@studiofryzjerskie.pl">kontakt@studiofryzjerskie.pl</a></p>
+                <p><span class="site-footer-label">Godziny</span><br>Pon–Sb 10:00–20:00</p>
+            </address>
+        </div>
+    </div>
+    <div class="site-footer-bottom">
+        <div class="container site-footer-bottom-inner">
+            <p class="site-footer-copy">© {% now "Y" %} Salon fryzjerski Duo. Wszelkie prawa zastrzeżone.</p>
+            <div class="site-footer-meta">
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}">Twoje konto</a>
+                {% else %}
+                    <a href="{% url 'login' %}">Logowanie</a>
+                    <span class="site-footer-meta-sep" aria-hidden="true">·</span>
+                    <a href="{% url 'register' %}">Rejestracja</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</footer>

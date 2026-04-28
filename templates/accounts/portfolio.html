@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Portfolio{% endblock %}
+
+{% block content %}
+<section class="section-card">
+    <h1>Portfolio</h1>
+    {% if images %}
+        <div class="gallery-grid portfolio-grid">
+            {% for item in images %}
+                <figure class="gallery-item gallery-photo">
+                    <button
+                        type="button"
+                        class="portfolio-open"
+                        data-index="{{ forloop.counter0 }}"
+                        data-src="{{ item.image.url }}"
+                        data-alt="{{ item.title|default:'Zdjęcie portfolio' }}"
+                        aria-label="Powiększ zdjęcie"
+                    >
+                        <img src="{{ item.image.url }}" alt="{{ item.title|default:'Zdjęcie portfolio' }}">
+                    </button>
+                    {% if item.title %}
+                        <figcaption>{{ item.title }}</figcaption>
+                    {% endif %}
+                </figure>
+            {% endfor %}
+        </div>
+
+        <div id="portfolio-lightbox" class="lightbox" aria-hidden="true">
+            <button type="button" class="lightbox-nav lightbox-prev" data-action="prev" aria-label="Poprzednie zdjęcie">‹</button>
+            <figure class="lightbox-figure">
+                <img id="lightbox-image" src="" alt="">
+            </figure>
+            <button type="button" class="lightbox-nav lightbox-next" data-action="next" aria-label="Następne zdjęcie">›</button>
+        </div>
+    {% else %}
+        <p>Portfolio jest jeszcze puste. Wróć wkrótce po nowe realizacje.</p>
+    {% endif %}
+</section>
+
+{% if images %}
+<script>
+    (function () {
+        const items = Array.from(document.querySelectorAll('.portfolio-open')).map((button) => ({
+            src: button.dataset.src,
+            alt: button.dataset.alt || 'Zdjęcie portfolio',
+        }));
+
+        const lightbox = document.getElementById('portfolio-lightbox');
+        const lightboxImage = document.getElementById('lightbox-image');
+        const openButtons = document.querySelectorAll('.portfolio-open');
+        let currentIndex = 0;
+
+        function renderImage(index) {
+            const normalized = (index + items.length) % items.length;
+            currentIndex = normalized;
+            lightboxImage.src = items[normalized].src;
+            lightboxImage.alt = items[normalized].alt;
+        }
+
+        function openLightbox(index) {
+            renderImage(index);
+            lightbox.classList.add('is-open');
+            lightbox.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('is-open');
+            lightbox.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        openButtons.forEach((button) => {
+            button.addEventListener('click', () => openLightbox(Number(button.dataset.index)));
+        });
+
+        lightbox.addEventListener('click', (event) => {
+            const action = event.target.dataset.action;
+            if (action === 'close') {
+                closeLightbox();
+            }
+            if (action === 'prev') {
+                renderImage(currentIndex - 1);
+            }
+            if (action === 'next') {
+                renderImage(currentIndex + 1);
+            }
+            if (event.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (!lightbox.classList.contains('is-open')) {
+                return;
+            }
+            if (event.key === 'Escape') {
+                closeLightbox();
+            }
+            if (event.key === 'ArrowLeft') {
+                renderImage(currentIndex - 1);
+            }
+            if (event.key === 'ArrowRight') {
+                renderImage(currentIndex + 1);
+            }
+        });
+    })();
+</script>
+{% endif %}
+{% endblock %}

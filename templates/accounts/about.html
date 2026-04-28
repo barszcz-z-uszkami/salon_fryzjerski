@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Duo | O nas{% endblock %}
+
+{% block content %}
+<section class="section-card about-brief">
+    <div class="about-brief-grid">
+        <figure class="about-brief-photo">
+            <img
+                src="{% static 'images/home/editorial.png' %}"
+                alt="Salon fryzjerski Duo"
+                loading="lazy"
+                decoding="async"
+            >
+        </figure>
+        <div class="about-brief-text">
+            <h1>O nas</h1>
+            <p>
+                <strong>Duo</strong> to salon fryzjerski, który łączy <strong>rzemiosło i tradycję</strong> z <strong>nowoczesnymi technikami</strong> i aktualnymi trendami.
+                W pracy stawiamy na <strong>jakość usług</strong>, sprawdzone preparaty oraz <strong>indywidualne podejście do każdego klienta</strong> — od konsultacji po efekt końcowy.
+            </p>
+            <p>
+                Zależy nam na <strong>komforcie i zaufaniu</strong>: słuchamy potrzeb, doradzamy wybór stylu i fryzury dopasowanej do Ciebie, dbając o spokojną atmosferę podczas wizyty.
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

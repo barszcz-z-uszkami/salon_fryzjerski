@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Zmień dane konta{% endblock %}
+
+{% block content %}
+<section class="auth-wrapper">
+    <div class="card">
+        <h1>Zmień dane konta</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Zapisz dane</button>
+        </form>
+        <p class="form-link"><a href="{% url 'dashboard' %}">Wróć do konta</a></p>
+    </div>
+</section>
+{% endblock %}

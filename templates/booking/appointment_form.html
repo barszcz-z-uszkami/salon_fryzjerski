@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Rezerwacja{% endblock %}
+
+{% block content %}
+<section class="auth-wrapper">
+    <div class="card">
+        <h1>{% if is_edit_mode %}Edytuj wizytę{% else %}Umów wizytę{% endif %}</h1>
+        <form method="post">
+            {% csrf_token %}
+            <p>
+                <label for="{{ form.service.id_for_label }}">{{ form.service.label }}:</label>
+                {{ form.service }}
+                {% if form.service.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.service.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
+            <p>
+                <label for="{{ form.employee.id_for_label }}">{{ form.employee.label }}:</label>
+                {{ form.employee }}
+                {% if form.employee.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.employee.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
+            <p>
+                <label for="{{ form.date.id_for_label }}">{{ form.date.label }}:</label>
+                {{ form.date }}
+                <small class="helptext">Format: dd/mm/rrrr. Rezerwacje przyjmujemy od poniedziałku do soboty.</small>
+                {% if form.date.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.date.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
+            <p>
+                <label for="{{ form.time.id_for_label }}">{{ form.time.label }}:</label>
+                {{ form.time }}
+                <small class="helptext">Dostępne sloty co 10 minut w godzinach 10:00-20:00.</small>
+                {% if form.time.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.time.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
+
+            <div class="section-card booking-availability">
+                <h2>Zajętość terminów w wybranym dniu</h2>
+                <p id="availability-info" class="meta">Wybierz datę i pracownika, aby zobaczyć zajęte sloty.</p>
+                <div id="occupied-slots" class="slots-list">
+                    {% if occupied_slots %}
+                        {% for slot in occupied_slots %}
+                            <span class="slot-chip slot-chip-busy">{{ slot }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="slot-chip slot-chip-free">Brak zajętych terminów</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <button type="submit">{% if is_edit_mode %}Zapisz zmiany{% else %}Zarezerwuj termin{% endif %}</button>
+        </form>
+    </div>
+</section>
+
+<script>
+    (function () {
+        const employeeField = document.getElementById('{{ form.employee.id_for_label }}');
+        const dateField = document.getElementById('{{ form.date.id_for_label }}');
+        const timeField = document.getElementById('{{ form.time.id_for_label }}');
+        const occupiedSlotsContainer = document.getElementById('occupied-slots');
+        const availabilityInfo = document.getElementById('availability-info');
+        const appointmentId = '{{ appointment.id|default:"" }}';
+
+        function renderSlots(slots) {
+            occupiedSlotsContainer.innerHTML = '';
+            if (!slots.length) {
+                const empty = document.createElement('span');
+                empty.className = 'slot-chip slot-chip-free';
+                empty.textContent = 'Brak zajętych terminów';
+                occupiedSlotsContainer.appendChild(empty);
+                return;
+            }
+
+            slots.forEach((slot) => {
+                const chip = document.createElement('span');
+                chip.className = 'slot-chip slot-chip-busy';
+                chip.textContent = slot;
+                occupiedSlotsContainer.appendChild(chip);
+            });
+        }
+
+        function updateTimeOptions(occupiedSlots) {
+            const occupiedSet = new Set(occupiedSlots.map((slot) => slot + ':00'));
+            Array.from(timeField.options).forEach((option) => {
+                option.disabled = occupiedSet.has(option.value);
+            });
+
+            if (timeField.selectedOptions.length && timeField.selectedOptions[0].disabled) {
+                const firstAvailableOption = Array.from(timeField.options).find((option) => !option.disabled);
+                if (firstAvailableOption) {
+                    timeField.value = firstAvailableOption.value;
+                }
+            }
+        }
+
+        async function loadAvailability() {
+            if (!employeeField.value || !dateField.value) {
+                availabilityInfo.textContent = 'Wybierz datę i pracownika, aby zobaczyć zajęte sloty.';
+                renderSlots([]);
+                updateTimeOptions([]);
+                return;
+            }
+
+            const params = new URLSearchParams({
+                employee: employeeField.value,
+                date: dateField.value,
+            });
+
+            if (appointmentId) {
+                params.append('appointment_id', appointmentId);
+            }
+
+            const response = await fetch('{% url "appointment_availability" %}?' + params.toString());
+            if (!response.ok) {
+                availabilityInfo.textContent = 'Nie udało się pobrać zajętości. Spróbuj ponownie.';
+                return;
+            }
+
+            const data = await response.json();
+            availabilityInfo.textContent = data.occupied_slots.length
+                ? 'Zajęte sloty dla wybranego dnia:'
+                : 'Brak zajętych slotów w wybranym dniu.';
+            renderSlots(data.occupied_slots || []);
+            updateTimeOptions(data.occupied_slots || []);
+        }
+
+        employeeField.addEventListener('change', loadAvailability);
+        dateField.addEventListener('change', loadAvailability);
+
+        if (dateField.value && employeeField.value) {
+            loadAvailability();
+        }
+    })();
+</script>
+{% endblock %}

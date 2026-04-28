@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Usługi{% endblock %}
+
+{% block content %}
+<section class="section-card">
+    <h1>Lista usług</h1>
+    {% if services %}
+        <div class="service-grid">
+            {% for service in services %}
+                <article class="service-card">
+                    <h3>{{ service.name }}</h3>
+                    <p class="meta">{{ service.duration_minutes }} min | {{ service.price }} PLN</p>
+                    <p>{{ service.description|default:"Profesjonalna usługa w naszym salonie." }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Brak usług do wyświetlenia.</p>
+    {% endif %}
+</section>
+{% endblock %}

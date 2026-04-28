@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Duo{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body{% block body_attrs %}{% endblock %}>
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand" href="{% url 'home' %}">
+                {% include 'includes/brand_wordmark_inner.html' %}
+            </a>
+            <nav class="main-nav">
+                <a href="{% url 'about' %}">O nas</a>
+                <a href="{% url 'service_list' %}">Usługi</a>
+                <a href="{% url 'portfolio' %}">Portfolio</a>
+                <a href="{% url 'contact' %}">Kontakt</a>
+                {% if request.user.is_authenticated and request.user.role == 'employee' %}
+                    <a class="nav-cta" href="{% url 'employee_appointments' %}">Terminarz</a>
+                {% else %}
+                    <a href="{% url 'public_schedule' %}">Terminarz</a>
+                    <a class="nav-cta" href="{% url 'create_appointment' %}">Umów wizytę</a>
+                {% endif %}
+                {% if request.user.is_authenticated %}
+                    <a class="account-link" href="{% url 'dashboard' %}" title="Konto">
+                        <img class="account-icon" src="{% static 'icons/user-settings.svg' %}" alt="Konto użytkownika">
+                    </a>
+                {% else %}
+                    <a class="account-link" href="{% url 'login' %}" title="Zaloguj">
+                        <img class="account-icon" src="{% static 'icons/user-settings.svg' %}" alt="Zaloguj">
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {% block full_width %}{% endblock %}
+        <div class="container content-space">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message message-{{ message.tags|default:'info' }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    {% include 'includes/footer.html' %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

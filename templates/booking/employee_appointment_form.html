@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Wizyta klienta{% endblock %}
+
+{% block content %}
+<section class="auth-wrapper">
+    <div class="card">
+        <h1>{% if is_edit_mode %}Edytuj wizytę{% else %}Dodaj wizytę w imieniu klienta{% endif %}</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">{% if is_edit_mode %}Zapisz zmiany{% else %}Dodaj wizytę{% endif %}</button>
+        </form>
+        <p class="form-link"><a href="{% url 'employee_appointments' %}">Powrót do listy wizyt</a></p>
+    </div>
+</section>
+{% endblock %}

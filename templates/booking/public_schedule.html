@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Terminarz{% endblock %}
+
+{% block content %}
+<section class="section-card">
+    <h1>Terminarz</h1>
+    <p class="meta">Wybierz pracownika i dzień — zobaczysz tylko godziny z jednego dnia. Przekreślone = zajęte lub niedostępne.</p>
+
+    {% if not employees %}
+        <p>Brak pracowników w systemie — terminarz będzie dostępny po dodaniu kont.</p>
+    {% else %}
+        <form method="get" class="schedule-toolbar">
+            <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
+            <input type="hidden" name="day" value="{{ selected_day|date:'Y-m-d' }}">
+            <p class="schedule-employee-field">
+                <label for="employee">Pracownik:</label>
+                <select name="employee" id="employee" onchange="this.form.submit()">
+                    {% for emp in employees %}
+                        <option value="{{ emp.pk }}" {% if selected_employee and selected_employee.pk == emp.pk %}selected{% endif %}>
+                            {{ emp.get_full_name|default:emp.username }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </p>
+        </form>
+
+        <div class="week-nav">
+            <a class="btn btn-secondary" href="{% url 'public_schedule' %}?employee={{ selected_employee.pk }}&week={{ prev_week }}">‹ Poprzedni tydzień</a>
+            <span class="week-range-label">Tydzień {{ week_start|date:"j.m" }} – {{ week_end|date:"j.m Y" }}</span>
+            <a class="btn btn-secondary" href="{% url 'public_schedule' %}?employee={{ selected_employee.pk }}&week={{ next_week }}">Następny tydzień ›</a>
+        </div>
+
+        <div class="day-tabs" role="tablist" aria-label="Dni tygodnia">
+            {% for tab in day_tabs %}
+                {% if tab.clickable %}
+                    <a
+                        class="day-tab{% if tab.selected %} day-tab-selected{% endif %}"
+                        href="{% url 'public_schedule' %}?employee={{ selected_employee.pk }}&week={{ week_start|date:'Y-m-d' }}&day={{ tab.iso }}"
+                    >
+                        <span class="day-tab-label">{{ tab.label }}</span>
+                        <span class="day-tab-date">{{ tab.date|date:"j.m" }}</span>
+                        {% if tab.is_sunday %}
+                            <span class="day-tab-count">Zamknięte</span>
+                        {% elif tab.is_past %}
+                            <span class="day-tab-count">—</span>
+                        {% else %}
+                            <span class="day-tab-count">{{ tab.free_count }} wolnych</span>
+                        {% endif %}
+                    </a>
+                {% else %}
+                    <span class="day-tab day-tab-disabled{% if tab.selected %} day-tab-selected{% endif %}{% if tab.is_past or tab.is_sunday or tab.today_closed_evening %} day-tab-muted{% endif %}">
+                        <span class="day-tab-label">{{ tab.label }}</span>
+                        <span class="day-tab-date">{{ tab.date|date:"j.m" }}</span>
+                        {% if tab.is_sunday %}
+                            <span class="day-tab-count">Zamknięte</span>
+                        {% elif tab.is_past or tab.today_closed_evening %}
+                            <span class="day-tab-count">—</span>
+                        {% else %}
+                            <span class="day-tab-count">{{ tab.free_count }} wolnych</span>
+                        {% endif %}
+                    </span>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="day-schedule-panel">
+            <h2 class="day-schedule-heading">
+                {{ selected_day|date:"l j E Y" }}
+                {% if selected_day == today %}<span class="meta">(dzisiaj)</span>{% endif %}
+            </h2>
+            <div class="day-slot-grid">
+                {% for slot in day_slots %}
+                    {% if slot.available %}
+                        <span class="day-slot day-slot-free">{{ slot.time }}</span>
+                    {% else %}
+                        <span class="day-slot day-slot-busy">{{ slot.time }}</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <p class="helptext">Rezerwacja: <a href="{% url 'login' %}">zaloguj się</a> i wybierz usługę w formularzu wizyty.</p>
+    {% endif %}
+</section>
+{% endblock %}

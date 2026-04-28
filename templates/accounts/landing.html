@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Duo | Strona główna{% endblock %}
+
+{% block body_attrs %} class="page-home"{% endblock %}
+
+{% block full_width %}
+<!-- Karuzela: zdjęcia w static/images/home/ jako slide-01.png … slide-05.png -->
+<section
+    class="home-carousel"
+    tabindex="0"
+    data-home-carousel
+    aria-roledescription="karuzela"
+    aria-label="Zdjęcia salonu Duo"
+>
+    <div class="carousel-viewport" data-carousel-viewport>
+        <div class="carousel-track" data-carousel-track>
+            {% for i in "12345" %}
+            <div class="carousel-slide" data-carousel-slide aria-roledescription="slajd">
+                <img
+                    class="carousel-photo"
+                    src="{% get_static_prefix %}images/home/slide-0{{ forloop.counter }}.png"
+                    alt="Salon Duo, zdjęcie {{ forloop.counter }} z 5"
+                    loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                    decoding="async"
+                >
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <button type="button" class="carousel-nav carousel-nav--prev" data-carousel-prev aria-label="Poprzednie zdjęcie">
+        <span aria-hidden="true">‹</span>
+    </button>
+    <button type="button" class="carousel-nav carousel-nav--next" data-carousel-next aria-label="Następne zdjęcie">
+        <span aria-hidden="true">›</span>
+    </button>
+    <div class="carousel-dots" role="tablist" aria-label="Wybór slajdu">
+        {% for i in "12345" %}
+        <button
+            type="button"
+            class="carousel-dot{% if forloop.first %} is-active{% endif %}"
+            data-carousel-dot
+            role="tab"
+            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+            aria-label="Slajd {{ forloop.counter }}"
+        ></button>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="home-cta home-cta--accent home-breakout">
+    <p class="home-cta-eyebrow">Salon fryzjerski Duo</p>
+    <h1 class="home-cta-title">Dobra fryzura zaczyna się od rozmowy</h1>
+    <p class="home-cta-lead">
+        Matka i córka — łączymy doświadczenie i świeże spojrzenie. Najpierw słuchamy, dopiero potem sięgamy po nożyczki,
+        bo najważniejsze są potrzeby osoby, która siada na naszym fotelu.
+    </p>
+    <a class="btn btn-cta-solid" href="{% url 'create_appointment' %}">zarezerwuj wizytę</a>
+</section>
+
+<section class="home-editorial">
+    <div class="home-editorial-grid">
+        <figure class="home-editorial-figure">
+            <img
+                class="home-editorial-photo"
+                src="{% static 'images/home/editorial.png' %}"
+                alt="Salon fryzjerski Duo — zespół i atmosfera salonu"
+                width="900"
+                height="1125"
+                loading="lazy"
+                decoding="async"
+            >
+        </figure>
+        <div class="home-editorial-text">
+            <p class="home-story-eyebrow">Rodzinny salon</p>
+            <h2 class="home-story-title">Dwa pokolenia, jeden salon</h2>
+            <p class="home-story-lead">
+                Duo to rodzinna historia: tradycja rzemiosła spotyka się tu z nowoczesnymi technikami i trendami.
+                Fryzury dopasowujemy do Ciebie — od klasyki po odważniejsze metamorfozy — w atmosferze spokoju i zaufania.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="home-trust" aria-labelledby="home-trust-heading">
+    <div class="home-trust-inner">
+        <p class="home-trust-label">Na co stawiamy</p>
+        <h2 id="home-trust-heading" class="home-trust-heading">Dlaczego klienci do nas wracają?</h2>
+        <ul class="home-trust-list">
+            <li class="home-trust-item">
+                <span class="home-trust-icon" aria-hidden="true">
+                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M14 14h12v20a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V14Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M16 14V10a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </span>
+                <div class="home-trust-copy">
+                    <h3>Profesjonalne kosmetyki</h3>
+                    <p>Sprawdzone marki, które dbają o kondycję włosów — także po koloryzacji i rozjaśnianiu.</p>
+                </div>
+            </li>
+            <li class="home-trust-item">
+                <span class="home-trust-icon" aria-hidden="true">
+                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M9 17l11 11L31 11" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 28h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </span>
+                <div class="home-trust-copy">
+                    <h3>Wysoka jakość usług</h3>
+                    <p>Dokładność, higiena i spójny efekt. Nie spieszymy się kosztem precyzji.</p>
+                </div>
+            </li>
+            <li class="home-trust-item">
+                <span class="home-trust-icon" aria-hidden="true">
+                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="20" cy="14" r="6" stroke="currentColor" stroke-width="1.7"/><path d="M8 33c0-6.6 5.4-12 12-12s12 5.4 12 12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </span>
+                <div class="home-trust-copy">
+                    <h3>Indywidualne podejście</h3>
+                    <p>Cięcie i styl pod Twoją twarz, tryb życia i to, jak naprawdę chcesz wyglądać.</p>
+                </div>
+            </li>
+            <li class="home-trust-item">
+                <span class="home-trust-icon" aria-hidden="true">
+                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="40" height="40"><path d="M20 33c-8-6.5-12-10.5-12-15a6 6 0 0 1 10.2-4.2L20 16l1.8-2.2A6 6 0 0 1 32 18c0 4.5-4 8.5-12 15Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                </span>
+                <div class="home-trust-copy">
+                    <h3>Przyjazna atmosfera</h3>
+                    <p>Mały zespół, znane twarze, czas na rozmowę — bez pośpiechu i bez „taśmy produkcyjnej”.</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="home-booking-showcase home-breakout home-breakout--tight">
+    <div class="home-booking-showcase-inner">
+        <div class="home-booking-showcase-copy">
+            <p class="home-booking-kicker">Rezerwacja online</p>
+            <h2>Umów wygodnie wizytę online</h2>
+            <p>Wybierz usługę i termin — ciesz się szybko zarezerwowaną wizytą.</p>
+            <div class="home-booking-actions">
+                <a class="btn btn-primary" href="{% url 'create_appointment' %}">Umów wizytę</a>
+                <a class="btn btn-ghost-light" href="{% url 'public_schedule' %}">Zobacz terminy</a>
+            </div>
+        </div>
+        <div class="home-booking-showcase-visual">
+            <div class="home-mosaic" role="presentation" aria-hidden="true">
+                <div class="home-mosaic-cell home-mosaic-cell--tall">
+                    <img class="home-mosaic-img" src="{% static 'images/home/booking-mosaic-1.png' %}" alt="" width="400" height="520" loading="lazy" decoding="async">
+                </div>
+                <div class="home-mosaic-stack">
+                    <div class="home-mosaic-cell">
+                        <img class="home-mosaic-img" src="{% static 'images/home/booking-mosaic-2.png' %}" alt="" width="400" height="240" loading="lazy" decoding="async">
+                    </div>
+                    <div class="home-mosaic-cell">
+                        <img class="home-mosaic-img" src="{% static 'images/home/booking-mosaic-3.png' %}" alt="" width="400" height="240" loading="lazy" decoding="async">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/home-carousel.js' %}" defer></script>
+{% endblock %}

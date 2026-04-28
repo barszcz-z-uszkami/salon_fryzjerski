@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Kontakt{% endblock %}
+
+{% block content %}
+<section class="section-card">
+    <h1>Kontakt</h1>
+    <div class="contact-layout">
+        <div class="contact-details">
+            <p><strong>Adres:</strong> Aleja Piastów 62, Szczecin</p>
+            <p><strong>Telefon:</strong> +48 600 700 800</p>
+            <p><strong>E-mail:</strong> kontakt@studiofryzjerskie.pl</p>
+            <p><strong>Godziny:</strong> Pon–Sb 10:00–20:00</p>
+        </div>
+        <div class="contact-map">
+            <iframe
+                title="Mapa dojazdu do salonu"
+                src="https://www.google.com/maps?q=Aleja+Piast%C3%B3w+62,+Szczecin&output=embed"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+        </div>
+    </div>
+</section>
+{% endblock %}

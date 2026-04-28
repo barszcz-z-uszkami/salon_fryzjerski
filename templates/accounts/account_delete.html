@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Usuń konto{% endblock %}
+
+{% block content %}
+<section class="auth-wrapper">
+    <div class="card">
+        <h1>Usuń konto</h1>
+        <p>Ta operacja jest nieodwracalna. Czy na pewno chcesz usunąć konto?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit">Usuń konto</button>
+        </form>
+        <p class="form-link"><a href="{% url 'dashboard' %}">Anuluj i wróć</a></p>
+    </div>
+</section>
+{% endblock %}

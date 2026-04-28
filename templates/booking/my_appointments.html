@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Moje wizyty{% endblock %}
+
+{% block content %}
+<section class="section-card">
+    <h1>Moje wizyty</h1>
+    <p><a class="btn btn-primary" href="{% url 'create_appointment' %}">Umów nową wizytę</a></p>
+
+    <h2>Nadchodzące wizyty</h2>
+    {% if upcoming_appointments %}
+        <div class="appointment-list">
+            {% for appointment in upcoming_appointments %}
+                <article class="appointment-item">
+                    <p><strong>{{ appointment.date }} {{ appointment.time }}</strong></p>
+                    <p>{{ appointment.service.name }}</p>
+                    <p>Fryzjer: {{ appointment.employee.get_full_name|default:appointment.employee.username }}</p>
+                    <p>Status: {{ appointment.get_status_display }}</p>
+                    <p>
+                        <a href="{% url 'edit_appointment' appointment.id %}">Edytuj</a>
+                        <form method="post" action="{% url 'cancel_appointment' appointment.id %}" class="inline-form">
+                            {% csrf_token %}
+                            <button type="submit">Odwołaj</button>
+                        </form>
+                    </p>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Brak nadchodzących wizyt.</p>
+    {% endif %}
+
+    <h2>Historia wizyt</h2>
+    {% if history_appointments %}
+        <ul>
+            {% for appointment in history_appointments %}
+                <li>{{ appointment.date }} {{ appointment.time }} - {{ appointment.service.name }} - {{ appointment.get_status_display }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Brak wizyt historycznych.</p>
+    {% endif %}
+
+    <h2>Odwołane wizyty</h2>
+    {% if cancelled_appointments %}
+        <ul>
+            {% for appointment in cancelled_appointments %}
+                <li>{{ appointment.date }} {{ appointment.time }} - {{ appointment.service.name }} - {{ appointment.get_status_display }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Brak odwołanych wizyt.</p>
+    {% endif %}
+</section>
+{% endblock %}

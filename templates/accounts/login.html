@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Fryzjerskie | Logowanie{% endblock %}
+
+{% block content %}
+<section class="auth-wrapper">
+    <div class="card">
+        <h1>Logowanie</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Zaloguj się</button>
+        </form>
+        <p class="form-link">
+            <a href="{% url 'register' %}">Nie masz konta? Zarejestruj się</a>
+        </p>
+    </div>
+</section>
+{% endblock %}
