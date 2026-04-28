@@ -216,7 +216,6 @@ def public_schedule_view(request):
     )
 
 
-@login_required
 def service_list_view(request):
     services = Service.objects.all().order_by('name')
     return render(request, 'booking/service_list.html', {'services': services})
