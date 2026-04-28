@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Studio Fryzjerskie | Umów wizytę{% endblock %}
+{% block title %}Studio Fryzjerskie | {% if is_edit_mode %}Edytuj wizytę{% else %}Umów wizytę{% endif %}{% endblock %}
 
 {% block content %}
 <section class="section-card">
-    <h1>Wybierz usługę i pracownika</h1>
+    <h1>{% if is_edit_mode %}Edytuj wizytę{% else %}Wybierz usługę i pracownika{% endif %}</h1>
     <form method="post" id="booking-form" class="booking-layout">
         {% csrf_token %}
 
@@ -62,7 +62,7 @@
                 <p><strong>Dzień:</strong> <span id="summary-date">-</span></p>
                 <p><strong>Godzina:</strong> <span id="summary-time">-</span></p>
                 <input type="hidden" name="date" id="selected-date" value="{{ selected_date }}">
-                <button type="submit">Zarejestruj</button>
+                <button type="submit">{% if is_edit_mode %}Zapisz zmiany{% else %}Zarejestruj{% endif %}</button>
             </div>
         </aside>
     </form>
@@ -84,6 +84,7 @@
         const selectedDate = document.getElementById('selected-date');
         const initialDate = '{{ selected_date }}';
         const initialTime = '{{ selected_time }}';
+        const appointmentId = '{{ appointment_id|default:"" }}';
 
         const summaryService = document.getElementById('summary-service');
         const summaryEmployee = document.getElementById('summary-employee');
@@ -119,6 +120,9 @@
             }
             if (service.value) {
                 params.append('service', service.value);
+            }
+            if (appointmentId) {
+                params.append('appointment_id', appointmentId);
             }
 
             const response = await fetch('{% url "appointment_calendar" %}?' + params.toString());

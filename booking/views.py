@@ -7,7 +7,6 @@ from django.utils import timezone
 from datetime import datetime, timedelta, time
 
 from accounts.models import User
-from booking.forms import AppointmentForm
 from booking.models import Appointment, Service
 
 
@@ -358,34 +357,84 @@ def edit_appointment_view(request, appointment_id):
         messages.error(request, 'Tej wizyty nie można już edytować.')
         return redirect('my_appointments')
 
-    occupied_slots = []
-    all_slots = _generate_time_slots()
+    services = Service.objects.all().order_by('name')
+    employees = User.objects.filter(role='employee').order_by('first_name', 'last_name', 'username')
+    selected_service = appointment.service
+    selected_employee = appointment.employee
+    selected_service_id = str(appointment.service_id)
+    selected_employee_id = str(appointment.employee_id)
+    selected_date = appointment.date.strftime('%d/%m/%Y')
+    selected_time = appointment.time.strftime('%H:%M')
 
     if request.method == 'POST':
-        form = AppointmentForm(request.POST, instance=appointment)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Zmiany w wizycie zostały zapisane.')
-            return redirect('my_appointments')
-        selected_employee = form.cleaned_data.get('employee') if hasattr(form, 'cleaned_data') else None
-        selected_date = form.cleaned_data.get('date') if hasattr(form, 'cleaned_data') else None
-        if selected_employee and selected_date:
-            occupied_time_values = _get_booked_slots(selected_employee, selected_date, appointment.id)
-            occupied_slots = sorted(slot.strftime('%H:%M') for slot in occupied_time_values)
-    else:
-        form = AppointmentForm(instance=appointment)
-        occupied_time_values = _get_booked_slots(appointment.employee, appointment.date, appointment.id)
-        occupied_slots = sorted(slot.strftime('%H:%M') for slot in occupied_time_values)
+        service_id = request.POST.get('service', '').strip()
+        employee_id = request.POST.get('employee', '').strip()
+        selected_service_id = service_id
+        selected_employee_id = employee_id
+        selected_date = request.POST.get('date', '').strip()
+        selected_time = request.POST.get('time', '').strip()
+
+        if not service_id:
+            messages.error(request, 'Wybierz usługę.')
+        if not employee_id:
+            messages.error(request, 'Wybierz pracownika.')
+
+        if service_id and employee_id and selected_date and selected_time:
+            selected_service = get_object_or_404(Service, pk=service_id)
+            selected_employee = get_object_or_404(User, pk=employee_id, role='employee')
+
+            try:
+                parsed_date = datetime.strptime(selected_date, '%d/%m/%Y').date()
+            except ValueError:
+                messages.error(request, 'Podaj datę w formacie dd/mm/rrrr.')
+                parsed_date = None
+
+            if parsed_date:
+                original_time_label = appointment.time.strftime('%H:%M')
+                is_original_slot = (
+                    parsed_date == appointment.date
+                    and selected_time == original_time_label
+                    and selected_employee.id == appointment.employee_id
+                )
+
+                if not is_original_slot and parsed_date < timezone.localdate():
+                    messages.error(request, 'Nie można rezerwować terminu w przeszłości.')
+                elif not is_original_slot and parsed_date.weekday() == 6:
+                    messages.error(request, 'Salon nie pracuje w niedzielę.')
+                else:
+                    available_slots = _get_available_slots(
+                        selected_employee,
+                        parsed_date,
+                        selected_service.duration_minutes,
+                        appointment_to_exclude_id=appointment.id,
+                    )
+                    if not is_original_slot and selected_time not in available_slots:
+                        messages.error(request, 'Wybrana godzina nie jest już dostępna.')
+                    else:
+                        appointment.employee = selected_employee
+                        appointment.service = selected_service
+                        appointment.date = parsed_date
+                        appointment.time = datetime.strptime(selected_time, '%H:%M').time()
+                        appointment.save(update_fields=['employee', 'service', 'date', 'time'])
+                        messages.success(request, 'Zmiany w wizycie zostały zapisane.')
+                        return redirect('my_appointments')
 
     return render(
         request,
-        'booking/appointment_form.html',
+        'booking/appointment_scheduler.html',
         {
-            'form': form,
+            'services': services,
+            'employees': employees,
+            'selected_service': selected_service,
+            'selected_employee': selected_employee,
+            'selected_service_id': selected_service_id,
+            'selected_employee_id': selected_employee_id,
+            'selected_date': selected_date,
+            'selected_time': selected_time,
+            'today': timezone.localdate(),
+            'today_is_closed': _is_today_closed_for_new_bookings(),
             'is_edit_mode': True,
-            'appointment': appointment,
-            'occupied_slots': occupied_slots,
-            'all_slots': all_slots,
+            'appointment_id': appointment.id,
         },
     )
 
