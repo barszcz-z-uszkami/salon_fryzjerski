@@ -14,7 +14,9 @@
     var total = slides.length;
     if (!track || !viewport || total === 0) return;
 
-    var MIN_VIEWPORT_H = 200;
+    function getMinViewportHeight() {
+        return window.innerWidth <= 900 ? 260 : 200;
+    }
 
     function syncCarouselHeight() {
         var slide = slides[index];
@@ -24,8 +26,9 @@
         if (img) {
             h = img.getBoundingClientRect().height;
         }
-        if (!h || h < MIN_VIEWPORT_H) {
-            h = Math.max(slide.offsetHeight, MIN_VIEWPORT_H);
+        var minViewportH = getMinViewportHeight();
+        if (!h || h < minViewportH) {
+            h = Math.max(slide.offsetHeight, minViewportH);
         }
         viewport.style.height = Math.round(h) + "px";
     }

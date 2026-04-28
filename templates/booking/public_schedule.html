@@ -5,7 +5,6 @@
 {% block content %}
 <section class="section-card">
     <h1>Terminarz</h1>
-    <p class="meta">Wybierz pracownika i dzień — zobaczysz tylko godziny z jednego dnia. Przekreślone = zajęte lub niedostępne.</p>
 
     {% if not employees %}
         <p>Brak pracowników w systemie — terminarz będzie dostępny po dodaniu kont.</p>
@@ -26,9 +25,9 @@
         </form>
 
         <div class="week-nav">
-            <a class="btn btn-secondary" href="{% url 'public_schedule' %}?employee={{ selected_employee.pk }}&week={{ prev_week }}">‹ Poprzedni tydzień</a>
-            <span class="week-range-label">Tydzień {{ week_start|date:"j.m" }} – {{ week_end|date:"j.m Y" }}</span>
-            <a class="btn btn-secondary" href="{% url 'public_schedule' %}?employee={{ selected_employee.pk }}&week={{ next_week }}">Następny tydzień ›</a>
+            <a class="btn btn-secondary" href="{% url 'public_schedule' %}?employee={{ selected_employee.pk }}&week={{ prev_week }}">‹ Poprzedni</a>
+            <span class="week-range-label">{{ week_start|date:"j.m" }} – {{ week_end|date:"j.m.Y" }}</span>
+            <a class="btn btn-secondary" href="{% url 'public_schedule' %}?employee={{ selected_employee.pk }}&week={{ next_week }}">Następny ›</a>
         </div>
 
         <div class="day-tabs" role="tablist" aria-label="Dni tygodnia">
