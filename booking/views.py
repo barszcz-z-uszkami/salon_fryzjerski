@@ -221,34 +221,6 @@ def service_list_view(request):
 
 
 @login_required
-def my_appointments_view(request):
-    today = timezone.localdate()
-    upcoming_appointments = Appointment.objects.filter(
-        client=request.user,
-        date__gte=today,
-    ).exclude(status='cancelled').order_by('date', 'time')
-    history_appointments = Appointment.objects.filter(
-        client=request.user,
-        date__lt=today,
-    ).order_by('-date', '-time')
-    cancelled_appointments = Appointment.objects.filter(
-        client=request.user,
-        status='cancelled',
-    ).order_by('-date', '-time')
-
-    return render(
-        request,
-        'booking/my_appointments.html',
-        {
-            'upcoming_appointments': upcoming_appointments,
-            'history_appointments': history_appointments,
-            'cancelled_appointments': cancelled_appointments,
-            'today': today,
-        },
-    )
-
-
-@login_required
 def create_appointment_view(request):
     if not is_client(request.user):
         messages.error(request, 'Tylko klient może umówić wizytę.')
@@ -310,7 +282,7 @@ def create_appointment_view(request):
                             status='new',
                         )
                         messages.success(request, 'Wizyta została zarezerwowana.')
-                        return redirect('my_appointments')
+                        return redirect('dashboard')
 
         if employee_id and employee_id.isdigit() and selected_date:
             selected_employee = User.objects.filter(pk=employee_id, role='employee').first()
@@ -355,7 +327,7 @@ def edit_appointment_view(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id, client=request.user)
     if appointment.status == 'cancelled' or appointment.date < timezone.localdate():
         messages.error(request, 'Tej wizyty nie można już edytować.')
-        return redirect('my_appointments')
+        return redirect('dashboard')
 
     services = Service.objects.all().order_by('name')
     employees = User.objects.filter(role='employee').order_by('first_name', 'last_name', 'username')
@@ -417,7 +389,7 @@ def edit_appointment_view(request, appointment_id):
                         appointment.time = datetime.strptime(selected_time, '%H:%M').time()
                         appointment.save(update_fields=['employee', 'service', 'date', 'time'])
                         messages.success(request, 'Zmiany w wizycie zostały zapisane.')
-                        return redirect('my_appointments')
+                        return redirect('dashboard')
 
     return render(
         request,
@@ -453,7 +425,7 @@ def cancel_appointment_view(request, appointment_id):
     elif request.method == 'POST':
         messages.error(request, 'Nie można odwołać tej wizyty.')
 
-    return redirect('my_appointments')
+    return redirect('dashboard')
 
 
 @login_required

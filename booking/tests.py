@@ -48,7 +48,7 @@ class BookingFlowTests(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse('my_appointments'))
+        self.assertRedirects(response, reverse('dashboard'))
         self.assertEqual(Appointment.objects.count(), 1)
         appointment = Appointment.objects.first()
         self.assertEqual(appointment.client, self.client_user)
@@ -92,7 +92,7 @@ class BookingFlowTests(TestCase):
 
         response = self.client.post(reverse('cancel_appointment', args=[appointment.id]))
 
-        self.assertRedirects(response, reverse('my_appointments'))
+        self.assertRedirects(response, reverse('dashboard'))
         appointment.refresh_from_db()
         self.assertEqual(appointment.status, 'cancelled')
 

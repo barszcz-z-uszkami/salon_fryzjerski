@@ -10,7 +10,6 @@ from booking.views import (
     employee_edit_appointment_view,
     employee_update_status_view,
     edit_appointment_view,
-    my_appointments_view,
     public_schedule_view,
     service_list_view,
 )
@@ -19,7 +18,6 @@ from booking.views import (
 urlpatterns = [
     path('terminarz/', public_schedule_view, name='public_schedule'),
     path('services/', service_list_view, name='service_list'),
-    path('appointments/', my_appointments_view, name='my_appointments'),
     path('appointments/availability/', appointment_availability_view, name='appointment_availability'),
     path('appointments/calendar/', appointment_calendar_view, name='appointment_calendar'),
     path('appointments/new/', create_appointment_view, name='create_appointment'),
